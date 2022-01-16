@@ -1,4 +1,4 @@
-//The function below displays the product selected by the user on the home page
+//The function below displays the product selected
 function displaySelectedProduct() {
   const whatProductUrl = window.location.href;
   const productUrl = new URL(whatProductUrl);

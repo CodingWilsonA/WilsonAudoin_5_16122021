@@ -1,4 +1,4 @@
-//The function below displays all products img, h3 and p on the home page
+//The function below displays required products img, h3 and p on the home page
 function displayProducts() {
     fetch("http://localhost:3000/api/products")
         .then(function(res) {
