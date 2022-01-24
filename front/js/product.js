@@ -1,4 +1,5 @@
 //The function below scraps Id from product URL
+//Add incorrect or null ID error feedback and remove the unnecessary const
 function getIdFromProductUrl() {
   const whatProductUrl = window.location.href;
   const productUrl = new URL(whatProductUrl);
@@ -10,6 +11,7 @@ function getIdFromProductUrl() {
 }
 
 //The function below fetches the product with the scrapped ID
+//Update the function below with a string type verification for getIdFromProductUrl
 function fetchProduct() {
   fetch("http://localhost:3000/api/products/" + getIdFromProductUrl())
     .then(function(res) {
@@ -24,18 +26,15 @@ function fetchProduct() {
     })
     .catch(function(err) {
       console.error("An error occured while fetching product info : ", err);
-      const productImgContainer = document.getElementsByClassName('item__img');
-      const displayedProductImg = document.createElement("img");
-      const displayedProductColors = document.getElementById("colors");
-      const selectColor = document.createElement("option");
-      selectColor.setAttribute("value", "Indisponible");
-      displayedProductImg.setAttribute("src", "../images/icons/fetch-error.png");
-      productImgContainer[0].appendChild(displayedProductImg);
-      document.getElementById("title").innerText = "Oops";
-      document.getElementById("price").innerText = "N.A";
-      document.getElementById("description").innerText = "Ce produit est actuellement indisponible";
-      selectColor.innerText = "Indisponible";
-      displayedProductColors.appendChild(selectColor);
+      const errorObject = {
+        imageUrl : "../images/icons/fetch-error.png",
+        name : "Indisponible",
+        price : "N.A",
+        title : "Oops",
+        description : "Ce produit est actuellement indisponible",
+        colors : "Indisponible" 
+      }
+      setProduct(errorObject);
     });
 }
 
