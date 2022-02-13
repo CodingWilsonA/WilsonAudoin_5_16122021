@@ -83,62 +83,35 @@ addToCart.addEventListener('click', function(eventClick) {
   const productUnitPrice = document.getElementById('price').innerText
   const productImgUrl = document.querySelector('div.item__img > img').getAttribute('src')
   const productId = JSON.stringify(getIdFromProductUrl())
+  class cartProductTemplate {
+    constructor(id, title, unitPrice, imgUrl, details) {
+      this.id = id
+      this.title = title
+      this.unitPrice = unitPrice
+      this.imgUrl = imgUrl
+      this.details = details
+    }
+  }
   //User input verification
   if (productQuantity.value < 1 || productColor.value === "") {
     //Préparer des alertes affichées directement dans le DOM
     window.alert("Une erreur s'est produite. Veuillez sélectionner une couleur et indiquer une quantité entre 1 et 100, s'il vous plait.");
     return
   }
-  //Retrieve storage data and create array within productId item if doesn't exist
+  //Check cart content
   const cartProduct = JSON.parse(sessionStorage.getItem(productId))
   if (cartProduct === null) {
-    const newCart = [
-      {
-        id : productId,
-        title : productTitle,
-        unitPrice : productUnitPrice,
-        imgUrl : productImgUrl,
-        details : {
-          [productColor] : productQuantity,
-        }
-      }
-    ] 
-    sessionStorage.setItem(productId, JSON.stringify(newCart))
-    return 
+    //Create product if it doesn't exist
+    const newCartProduct = new cartProductTemplate(productId, productTitle, productUnitPrice, productImgUrl, {[productColor] : productQuantity})
+    sessionStorage.setItem(productId, JSON.stringify(newCartProduct))
+    return
   }
-  //Check cart content
-  const productLineIndex = getProductLineIndex(cartProduct, productId)
-  if (productLineIndex > -1) {
+  if (cartProduct.details[productColor]) {
     //If color exists, increment
-    const currentCartProduct = cartProduct[productLineIndex]
-    if (currentCartProduct.details[productColor]) {
-      currentCartProduct.details[productColor] = Number(currentCartProduct.details[productColor]) + Number(productQuantity)
-    } else {
-      //If color doesn't exist, create color with new quantity
-      cartProduct[productLineIndex].details[productColor] = productQuantity
-    }
+    cartProduct.details[productColor] = Number(cartProduct.details[productColor]) + Number(productQuantity)
   } else {
-    //Push product if it doesn't exist
-      cartProduct.push({
-          id: productId,
-          title: productTitle,
-          unitPrice : productUnitPrice,
-          imgUrl : productImgUrl,
-          details: {
-            [productColor]: productQuantity,
-          }
-      })
+    //If color doesn't exist, create color with new quantity
+    cartProduct.details[productColor] = productQuantity
   }
   sessionStorage.setItem(productId, JSON.stringify(cartProduct))
 })
-//Loop retrieves product index in array. Returns -1 if product doesn't exist
-function getProductLineIndex(cartProduct, productId) {
-  let productLineIndex = -1
-  for (let i=0; i < cartProduct.length; i++) {
-      if (cartProduct[i].id === productId) {
-          productLineIndex = i
-          break
-      }
-  }
-  return productLineIndex
-}
