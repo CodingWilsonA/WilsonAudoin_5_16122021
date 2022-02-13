@@ -49,10 +49,10 @@ function fetchProduct() {
 //The function below sets the product info on the page
 function setProduct(displayIdProduct) {
   if(displayIdProduct instanceof errorObject){
-    document.getElementsByClassName("item__content__addButton")[0].setAttribute("style", "visibility: collapse;")
-    document.getElementsByClassName("item__content__settings")[0].setAttribute("style", "visibility: collapse;")
-    document.getElementsByClassName("item__content__description__title")[0].setAttribute("style", "visibility: collapse;")
-    document.getElementsByClassName("item__content__titlePrice")[0].setAttribute("style", "visibility: collapse;")
+    document.getElementsByClassName("item__content__addButton")[0].remove()
+    document.getElementsByClassName("item__content__settings")[0].remove()
+    document.getElementsByClassName("item__content__description__title")[0].remove()
+    document.getElementsByClassName("item__content__titlePrice")[0].remove()
   }
   const productImgContainer = document.getElementsByClassName('item__img')
   const displayedProductImg = document.createElement("img")
@@ -81,6 +81,7 @@ addToCart.addEventListener('click', function(eventClick) {
   const productQuantity = document.getElementById('quantity').value
   const productColor = document.getElementById('colors').value
   const productUnitPrice = document.getElementById('price').innerText
+  const productImgUrl = document.querySelector('div.item__img > img').getAttribute('src')
   const productId = JSON.stringify(getIdFromProductUrl())
   //User input verification
   if (productQuantity.value < 1 || productColor.value === "") {
@@ -96,6 +97,7 @@ addToCart.addEventListener('click', function(eventClick) {
         id : productId,
         title : productTitle,
         unitPrice : productUnitPrice,
+        imgUrl : productImgUrl,
         details : {
           [productColor] : productQuantity,
         }
@@ -120,14 +122,14 @@ addToCart.addEventListener('click', function(eventClick) {
       cartProduct.push({
           id: productId,
           title: productTitle,
-          colorUnitPrice : productUnitPrice,
+          unitPrice : productUnitPrice,
+          imgUrl : productImgUrl,
           details: {
-            [productColor.value]: productQuantity,
+            [productColor]: productQuantity,
           }
       })
   }
   sessionStorage.setItem(productId, JSON.stringify(cartProduct))
-  console.log(sessionStorage)
 })
 //Loop retrieves product index in array. Returns -1 if product doesn't exist
 function getProductLineIndex(cartProduct, productId) {
