@@ -24,7 +24,8 @@ function retrieveProductsInfo() {
 
 //Set cart recap
 function setProductsDetails() {
-    const products = retrieveProductsInfo()
+    retrieveProductsInfo()
+    const products = JSON.parse(sessionStorage.currentCart)
     for (let product in products) {
         for (let productDetails in products[product].details) {
             //Needs to be optimized into an HTML template
@@ -98,11 +99,12 @@ for (let i = 0; i < quantityValues.length; i++) {
         const modifiedProduct = quantityValues[i].closest("article")
         modifiedProductDetails.id = JSON.stringify(modifiedProduct.getAttribute('data-id'))
         modifiedProductDetails.color = modifiedProduct.getAttribute('data-color')
-        const modifiedCartProduct = JSON.parse(sessionStorage.getItem("currentCart"))
-        if (modifiedCartProduct[modifiedProductDetails.id].details[modifiedProductDetails.color]) {
-            modifiedCartProduct[modifiedProductDetails.id].details[modifiedProductDetails.color] = quantityValues[i].value
+        const modifiedCartProduct = JSON.parse(sessionStorage.getItem(modifiedProductDetails.id))
+        if (modifiedCartProduct.details[modifiedProductDetails.color]) {
+            modifiedCartProduct.details[modifiedProductDetails.color] = quantityValues[i].value
         }
-        sessionStorage.setItem("currentCart", JSON.stringify(modifiedCartProduct))
+        sessionStorage.setItem(modifiedProductDetails.id, JSON.stringify(modifiedCartProduct))
+        retrieveProductsInfo()
     })
 }
 
@@ -115,13 +117,14 @@ for (let i = 0; i < deleteProduct.length; i++) {
         const deletedProduct = deleteProduct[i].closest('article')
         modifiedProductDetails.id = JSON.stringify(deletedProduct.getAttribute('data-id'))
         modifiedProductDetails.color = deletedProduct.getAttribute('data-color')
-        const deletedCartProduct = JSON.parse(sessionStorage.getItem("currentCart"))
-        if (deletedCartProduct[modifiedProductDetails.id].details[modifiedProductDetails.color]) {
-            delete deletedCartProduct[modifiedProductDetails.id].details[modifiedProductDetails.color]
-            sessionStorage.setItem("currentCart", JSON.stringify(deletedCartProduct))
+        const deletedCartProduct = JSON.parse(sessionStorage.getItem(modifiedProductDetails.id))
+        if (deletedCartProduct.details[modifiedProductDetails.color]) {
+            delete deletedCartProduct.details[modifiedProductDetails.color]
+            sessionStorage.setItem(modifiedProductDetails.id, JSON.stringify(deletedCartProduct))
+            retrieveProductsInfo()
         }
-        if (Object.keys(deletedCartProduct[modifiedProductDetails.id].details).length === 0) {
-            sessionStorage.removeItem([modifiedProductDetails.id])
+        if (Object.keys(deletedCartProduct.details).length === 0) {
+            sessionStorage.removeItem(modifiedProductDetails.id)
             retrieveProductsInfo()
         }
         deleteProduct[i].closest('article').remove()
