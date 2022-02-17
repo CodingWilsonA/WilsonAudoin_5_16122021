@@ -29,60 +29,34 @@ function setProductsDetails() {
     for (let product in products) {
         for (let productDetails in products[product].details) {
             //Needs to be optimized into an HTML template
-            const productBlock = document.getElementById('cart__items')
-            const productContainer = document.createElement('article')
-            const productImgContainer = document.createElement('div')
-            const productImg = document.createElement('img')
-            const productContent = document.createElement('div')
-            const productDescription = document.createElement('div')
-            const productTitle = document.createElement('h2')
-            const productColor = document.createElement('p')
-            const productPrice = document.createElement('p')
-            const productSettings = document.createElement('div')
-            const productQuantityContainer = document.createElement('div')
-            const productQuantity = document.createElement('p')
-            const quantityInput = document.createElement('input')
-            const deleteProductContainer = document.createElement('div')
-            const deleteProduct = document.createElement('p')
-            productImgContainer.classList.add('cart__item__img')
-            productContainer.classList.add('cart__item')
-            productContent.classList.add('cart__item__content')
-            productDescription.classList.add('cart__item__content__description')
-            productSettings.classList.add('cart__item__content__settings')
-            productQuantityContainer.classList.add('cart__item__content__settings__quantity')
-            quantityInput.classList.add('itemQuantity')
-            deleteProductContainer.classList.add('cart__item__content__settings__delete')
-            deleteProduct.classList.add('deleteItem')
-            productImg.setAttribute('src', products[product].imgUrl)
-            productContainer.setAttribute('data-id', JSON.parse(products[product].id))
-            productContainer.setAttribute('data-color', productDetails)
-            quantityInput.setAttribute('type', 'number')
-            quantityInput.setAttribute('name', 'itemQuantity')
-            quantityInput.setAttribute('min', 1)
-            quantityInput.setAttribute('max', 100)
-            quantityInput.setAttribute('value', products[product].details[productDetails])
-            productTitle.innerText = products[product].title
-            productColor.innerText = "Couleur : " + productDetails
-            productPrice.innerText = "Prix unitaire de ce produit : " + products[product].unitPrice + "€"
-            productQuantity.innerText = "Qté : "
-            deleteProduct.innerText = "Supprimer"
-            productBlock.appendChild(productContainer)
-            productContainer.appendChild(productImgContainer)
-            productContainer.appendChild(productContent)
-            productImgContainer.appendChild(productImg)
-            productContent.appendChild(productDescription)
-            productContent.appendChild(productSettings)
-            productDescription.appendChild(productTitle)
-            productDescription.appendChild(productColor)
-            productDescription.appendChild(productPrice)
-            productSettings.appendChild(productQuantityContainer)
-            productSettings.appendChild(deleteProductContainer)
-            productQuantityContainer.appendChild(productQuantity)
-            productQuantityContainer.appendChild(quantityInput)
-            deleteProductContainer.appendChild(deleteProduct)
+            const htmlCartRecapTemplate = `
+                <article class="cart__item" data-id="${JSON.parse(products[product].id)}" data-color="${productDetails}">
+                    <div class="cart__item__img">
+                        <img src="${products[product].imgUrl}" alt="Photographie d'un canapé">
+                    </div>
+                    <div class="cart__item__content">
+                        <div class="cart__item__content__description">
+                            <h2>${products[product].title}</h2>
+                            <p>${productDetails}</p>
+                            <p>${products[product].unitPrice} €</p>
+                        </div>
+                        <div class="cart__item__content__settings">
+                            <div class="cart__item__content__settings__quantity">
+                                <p>Qté : </p>
+                                <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${products[product].details[productDetails]}">
+                            </div>
+                            <div class="cart__item__content__settings__delete">
+                                <p class="deleteItem">Supprimer</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `
+            document.getElementById('cart__items').innerHTML += htmlCartRecapTemplate
         }
         
     }
+    totals()
 }
 setProductsDetails()
 
@@ -105,6 +79,7 @@ for (let i = 0; i < quantityValues.length; i++) {
         }
         sessionStorage.setItem(modifiedProductDetails.id, JSON.stringify(modifiedCartProduct))
         retrieveProductsInfo()
+        totals()
     })
 }
 
@@ -121,81 +96,37 @@ for (let i = 0; i < deleteProduct.length; i++) {
         if (deletedCartProduct.details[modifiedProductDetails.color]) {
             delete deletedCartProduct.details[modifiedProductDetails.color]
             sessionStorage.setItem(modifiedProductDetails.id, JSON.stringify(deletedCartProduct))
-            retrieveProductsInfo()
         }
         if (Object.keys(deletedCartProduct.details).length === 0) {
             sessionStorage.removeItem(modifiedProductDetails.id)
-            retrieveProductsInfo()
         }
+        retrieveProductsInfo()
+        totals()
         deleteProduct[i].closest('article').remove()
     })
 }
 
 function totals() {
-    sessionStorage.removeItem("IsThisFirstTime_Log_From_LiveServer")
-    const totalProducts = retrieveProductsTemplates()
-    for (let i in totalProducts) {
-        for (let g in totalProducts[i].details) {
-            const productTotalQuantity = document.getElementById('totalQuantity')
-            const productTotalPrice = document.getElementById('totalPrice')
-            
-            const productSum = totalProducts[i].details[g].reduce(add, 0)
-            function add(accumulator, a) {
-                return accumulator + a
-            }
-            console.log(productSum)
-            /*const productImgContainer = document.createElement('div')
-            const productImg = document.createElement('img')
-            const productContent = document.createElement('div')
-            const productDescription = document.createElement('div')
-            const productTitle = document.createElement('h2')
-            const productColor = document.createElement('p')
-            const productPrice = document.createElement('p')
-            const productSettings = document.createElement('div')
-            const productQuantityContainer = document.createElement('div')
-            const productQuantity = document.createElement('p')
-            const quantityInput = document.createElement('input')
-            const deleteProductContainer = document.createElement('div')
-            const deleteProduct = document.createElement('p')
-            productImgContainer.classList.add('cart__item__img')
-            productContainer.classList.add('cart__item')
-            productContent.classList.add('cart__item__content')
-            productDescription.classList.add('cart__item__content__description')
-            productSettings.classList.add('cart__item__content__settings')
-            productQuantityContainer.classList.add('cart__item__content__settings__quantity')
-            quantityInput.classList.add('itemQuantity')
-            deleteProductContainer.classList.add('cart__item__content__settings__delete')
-            deleteProduct.classList.add('deleteItem')
-            productImg.setAttribute('src', products[i].imgUrl)
-            productContainer.setAttribute('data-id', JSON.parse(products[i].id))
-            productContainer.setAttribute('data-color', g)
-            quantityInput.setAttribute('type', 'number')
-            quantityInput.setAttribute('name', 'itemQuantity')
-            quantityInput.setAttribute('min', 1)
-            quantityInput.setAttribute('max', 100)
-            quantityInput.setAttribute('value', products[i].details[g])
-            productTitle.innerText = products[i].title
-            productColor.innerText = "Couleur : " + g
-            productPrice.innerText = "Prix unitaire de ce produit : " + products[i].unitPrice + "€"
-            productQuantity.innerText = "Qté : "
-            deleteProduct.innerText = "Supprimer"
-            productBlock.appendChild(productContainer)
-            productContainer.appendChild(productImgContainer)
-            productContainer.appendChild(productContent)
-            productImgContainer.appendChild(productImg)
-            productContent.appendChild(productDescription)
-            productContent.appendChild(productSettings)
-            productDescription.appendChild(productTitle)
-            productDescription.appendChild(productColor)
-            productDescription.appendChild(productPrice)
-            productSettings.appendChild(productQuantityContainer)
-            productSettings.appendChild(deleteProductContainer)
-            productQuantityContainer.appendChild(productQuantity)
-            productQuantityContainer.appendChild(quantityInput)
-            deleteProductContainer.appendChild(deleteProduct)*/
+    retrieveProductsInfo()
+    const products = JSON.parse(sessionStorage.currentCart)
+    const productUnits = []
+    const productSubPrices = []
+    let totalUnits = 0
+    let totalPrice = 0
+    for (let product in products) {
+        for (let productDetails in products[product].details) {
+            productUnits.push(Number(products[product].details[productDetails]))
+            productSubPrices.push(Number(products[product].details[productDetails]) * Number(products[product].unitPrice))
         }
-        
     }
-    return totalProducts
+    for (let unit in productUnits) {
+        totalUnits += productUnits[unit]
+    }
+    for (let subPrice in productSubPrices) {
+        totalPrice += productSubPrices[subPrice]
+    }
+    const cartTotalUnits = document.getElementById("totalQuantity")
+    const cartTotalPrice = document.getElementById("totalPrice")
+    cartTotalUnits.innerText = totalUnits
+    cartTotalPrice.innerText = totalPrice
 }
-
