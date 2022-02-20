@@ -1,25 +1,11 @@
-//Retrieve products' ids from storage
-function cartIdsList() {
-    const globalProducts = []
-    for (let i = 0; i < sessionStorage.length; i++) {
-        if (sessionStorage.key(i) != "IsThisFirstTime_Log_From_LiveServer") {
-            globalProducts.push(sessionStorage.key(i))
-        }
-    }
-    return globalProducts
-}
-
-//Retrieve values
+//Retrieve cart values from ids list
 function retrieveProductsInfo() {
-    const allProductsId = cartIdsList()
+    const allProductsId = JSON.parse(sessionStorage.getItem("cartIds"))
     const productsInfo = {}
-    for (let i in allProductsId) {
-        if (allProductsId[i] != "currentCart") {
-            Object.assign(productsInfo, {[allProductsId[i]] : JSON.parse(sessionStorage.getItem(allProductsId[i]))})
-        }
+    for (let id in allProductsId) {
+        Object.assign(productsInfo, {[allProductsId[id]] : JSON.parse(sessionStorage.getItem(allProductsId[id]))})
     }
     sessionStorage.setItem("currentCart", JSON.stringify(productsInfo))
-    return productsInfo
 }
 
 //Set cart recap
@@ -28,7 +14,6 @@ function setProductsDetails() {
     const products = JSON.parse(sessionStorage.currentCart)
     for (let product in products) {
         for (let productDetails in products[product].details) {
-            //Needs to be optimized into an HTML template
             const htmlCartRecapTemplate = `
                 <article class="cart__item" data-id="${JSON.parse(products[product].id)}" data-color="${productDetails}">
                     <div class="cart__item__img">
@@ -90,6 +75,7 @@ for (let i = 0; i < deleteProduct.length; i++) {
         eventClick.preventDefault()
         eventClick.stopPropagation()
         const deletedProduct = deleteProduct[i].closest('article')
+        const cartIds = JSON.parse(sessionStorage.getItem("cartIds"))
         modifiedProductDetails.id = JSON.stringify(deletedProduct.getAttribute('data-id'))
         modifiedProductDetails.color = deletedProduct.getAttribute('data-color')
         const deletedCartProduct = JSON.parse(sessionStorage.getItem(modifiedProductDetails.id))
@@ -98,14 +84,25 @@ for (let i = 0; i < deleteProduct.length; i++) {
             sessionStorage.setItem(modifiedProductDetails.id, JSON.stringify(deletedCartProduct))
         }
         if (Object.keys(deletedCartProduct.details).length === 0) {
+            for (let id in cartIds) {
+                if (cartIds[id] === modifiedProductDetails.id) {
+                    cartIds.splice(id, 1)
+                }
+            }
+            sessionStorage.setItem("cartIds", JSON.stringify(cartIds))
             sessionStorage.removeItem(modifiedProductDetails.id)
         }
         retrieveProductsInfo()
         totals()
+        if (cartIds.length === 0) {
+            sessionStorage.removeItem("cartIds")
+            sessionStorage.removeItem("currentCart")
+        }
         deleteProduct[i].closest('article').remove()
     })
 }
 
+//Calculates products units total and total price
 function totals() {
     retrieveProductsInfo()
     const products = JSON.parse(sessionStorage.currentCart)
