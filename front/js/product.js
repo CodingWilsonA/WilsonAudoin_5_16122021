@@ -104,6 +104,7 @@ addToCart.addEventListener('click', function(eventClick) {
     //Create product if it doesn't exist
     const newCartProduct = new cartProductTemplate(productId, productTitle, productUnitPrice, productImgUrl, {[productColor] : productQuantity})
     sessionStorage.setItem(productId, JSON.stringify(newCartProduct))
+    saveIdsToSessionStorage(productId)
     return
   }
   if (cartProduct.details[productColor]) {
@@ -115,3 +116,10 @@ addToCart.addEventListener('click', function(eventClick) {
   }
   sessionStorage.setItem(productId, JSON.stringify(cartProduct))
 })
+//Lists ids into array and save it to sessionStorage
+function saveIdsToSessionStorage(id) {
+  let cartIds = []
+  cartIds = JSON.parse(sessionStorage.getItem("cartIds")) || []
+  cartIds.push(id)
+  sessionStorage.setItem("cartIds", JSON.stringify(cartIds))
+}
