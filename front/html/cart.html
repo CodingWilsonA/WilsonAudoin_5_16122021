@@ -77,27 +77,27 @@
               <form method="get" class="cart__order__form">
                 <div class="cart__order__form__question">
                   <label for="firstName">Prénom: </label>
-                  <input type="text" name="firstName" id="firstName" required>
+                  <input type="text" name="firstName" id="firstName" pattern="[a-zA-Z-]+" placeholder="Exemple : Jeanne ou Jean-Marc" required>
                   <p id="firstNameErrorMsg"><!-- ci est un message d'erreur --></p>
                 </div>
                 <div class="cart__order__form__question">
                   <label for="lastName">Nom: </label>
-                  <input type="text" name="lastName" id="lastName" required>
+                  <input type="text" name="lastName" id="lastName" pattern="[a-zA-Z-]+" placeholder="Exemple : Dupont ou Dupont-Dupont" required>
                   <p id="lastNameErrorMsg"></p>
                 </div>
                 <div class="cart__order__form__question">
                   <label for="address">Adresse: </label>
-                  <input type="text" name="address" id="address" required>
+                  <input type="text" name="address" id="address" pattern="([0-9]*) ?([a-zA-Z,\. ]*) ?([0-9]{5})" placeholder="Format : numéro, voie et code postal. Exemple : 2 rue du centre 33000" required>
                   <p id="addressErrorMsg"></p>
                 </div>
                 <div class="cart__order__form__question">
                   <label for="city">Ville: </label>
-                  <input type="text" name="city" id="city" required>
+                  <input type="text" name="city" id="city" pattern="[a-zA-Z-]+" placeholder="Exemple : Bordeaux" required>
                   <p id="cityErrorMsg"></p>
                 </div>
                 <div class="cart__order__form__question">
                   <label for="email">Email: </label>
-                  <input type="email" name="email" id="email" required>
+                  <input type="email" name="email" id="email" placeholder="Exemple : jeanne-dupont@gmail.com" required>
                   <p id="emailErrorMsg"></p>
                 </div>
                 <div class="cart__order__form__submit">
