@@ -126,6 +126,7 @@ function totals() {
     }
 }
 
+//Retrieve form inputs
 function retrieveFormInputs() {
     if (document.querySelector('form')) {
         document.querySelector('form').addEventListener('submit', function(eventClick) {
@@ -145,6 +146,7 @@ function retrieveFormInputs() {
 }
 retrieveFormInputs()
 
+//Redirects to confirmation page if promise contains order id
 function request() {
     const userInfo = JSON.parse(sessionStorage.getItem("userDetails"))
     const orderIds = JSON.parse(sessionStorage.getItem("cartIds"))
@@ -171,6 +173,7 @@ function request() {
     })
 }
 
+//Sets order id on confirmation page
 function setOrderId() {
     if (document.getElementById('orderId')) {
         const orderUrl = new URL(window.location.href);
