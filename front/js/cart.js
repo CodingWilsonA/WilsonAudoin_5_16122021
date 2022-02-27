@@ -36,9 +36,10 @@ function setProductsDetails() {
                     </div>
                 </article>
             `
-            document.getElementById('cart__items').innerHTML += htmlCartRecapTemplate
+            if (document.getElementById('cart__items')) {
+                document.getElementById('cart__items').innerHTML += htmlCartRecapTemplate
+            }  
         }
-        
     }
     totals()
 }
@@ -119,51 +120,67 @@ function totals() {
     for (let subPrice in productSubPrices) {
         totalPrice += productSubPrices[subPrice]
     }
-    const cartTotalUnits = document.getElementById("totalQuantity")
-    const cartTotalPrice = document.getElementById("totalPrice")
-    cartTotalUnits.innerText = totalUnits
-    cartTotalPrice.innerText = totalPrice
+    if (document.getElementById("totalQuantity") && document.getElementById("totalPrice")) {
+        document.getElementById("totalQuantity").innerText = totalUnits
+        document.getElementById("totalPrice").innerText = totalPrice
+    }
 }
 
-
-function submitOrder(eventClick) {
-    debugger
-    eventClick.preventDefault()
-    console.log(eventClick)
-    //Sanitize this form input results
-    const userFirstName = document.getElementById('firstName').value
-    const userLastName = document.getElementById('lastName').value
-    const userAddress = document.getElementById('address').value
-    const userCity = document.getElementById('city').value
-    const userEmail = document.getElementById('email').value
-    const userDetails = {}
-    Object.assign(userDetails, {"firstName" : userFirstName, "lastName" : userLastName, "address" : userAddress, "city" : userCity, "email" : userEmail})
-    sessionStorage.setItem("userDetails", JSON.stringify(userDetails))
-    request()
+//Retrieve form inputs
+function retrieveFormInputs() {
+    if (document.querySelector('form')) {
+        document.querySelector('form').addEventListener('submit', function(eventClick) {
+            eventClick.preventDefault()
+            //Sanitize this form input results
+            const userFirstName = document.getElementById('firstName').value
+            const userLastName = document.getElementById('lastName').value
+            const userAddress = document.getElementById('address').value
+            const userCity = document.getElementById('city').value
+            const userEmail = document.getElementById('email').value
+            const userDetails = {}
+            Object.assign(userDetails, {"firstName" : userFirstName, "lastName" : userLastName, "address" : userAddress, "city" : userCity, "email" : userEmail})
+            sessionStorage.setItem("userDetails", JSON.stringify(userDetails))
+            request()
+        })
+    }
 }
+retrieveFormInputs()
 
-
+//Redirects to confirmation page if promise contains order id
 function request() {
-    const userInfo = JSON.parse(sessionStorage.userDetails)
-    const orderIds = JSON.parse(sessionStorage.cartIds)
+    const userInfo = JSON.parse(sessionStorage.getItem("userDetails"))
+    const orderIds = JSON.parse(sessionStorage.getItem("cartIds"))
+    const orderArray = []
+    for (let id in orderIds) {
+        orderArray.push(JSON.parse(orderIds[id]))
+    }  
     fetch("http://localhost:3000/api/products/order", {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({"contact": userInfo, "products": orderIds})
+        body: JSON.stringify({contact: userInfo, products: orderArray})
     })
     .then(function(res) {
-        if (!res.ok) {
-            console.log(res)
-            return res.text().then(function(text) {throw new Error(text)})
-        } else {
-            console.log(res)
-            return res.json()
-        }
+        return res.json()
+    })
+    .then(function(value) {
+        window.location.href = "http://127.0.0.1:5500/front/html/confirmation.html?orderId=" + value.orderId
     })
     .catch(function(err) {
         console.log(err)
     })
 }
+
+//Sets order id on confirmation page
+function setOrderId() {
+    if (document.getElementById('orderId')) {
+        const orderUrl = new URL(window.location.href);
+        const search_params = new URLSearchParams(orderUrl.search);
+        if(search_params.has('orderId')){
+            document.getElementById('orderId').innerText = search_params.get('orderId')
+        }
+    }
+}
+setOrderId()
