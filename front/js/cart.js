@@ -5,13 +5,12 @@ function retrieveProductsInfo() {
     for (let id in allProductsId) {
         Object.assign(productsInfo, {[allProductsId[id]] : JSON.parse(sessionStorage.getItem(allProductsId[id]))})
     }
-    sessionStorage.setItem("currentCart", JSON.stringify(productsInfo))
+    return productsInfo
 }
 
 //Set cart recap
 function setProductsDetails() {
-    retrieveProductsInfo()
-    const products = JSON.parse(sessionStorage.currentCart)
+    const products = retrieveProductsInfo()
     for (let product in products) {
         for (let productDetails in products[product].details) {
             const htmlCartRecapTemplate = `
@@ -96,7 +95,6 @@ for (let i = 0; i < deleteProduct.length; i++) {
         totals()
         if (cartIds.length === 0) {
             sessionStorage.removeItem("cartIds")
-            sessionStorage.removeItem("currentCart")
         }
         deleteProduct[i].closest('article').remove()
     })
@@ -104,8 +102,7 @@ for (let i = 0; i < deleteProduct.length; i++) {
 
 //Calculates products units total and total price
 function totals() {
-    retrieveProductsInfo()
-    const products = JSON.parse(sessionStorage.currentCart)
+    const products = retrieveProductsInfo()
     const productUnits = []
     const productSubPrices = []
     let totalUnits = 0
@@ -126,4 +123,47 @@ function totals() {
     const cartTotalPrice = document.getElementById("totalPrice")
     cartTotalUnits.innerText = totalUnits
     cartTotalPrice.innerText = totalPrice
+}
+
+
+function submitOrder(eventClick) {
+    debugger
+    eventClick.preventDefault()
+    console.log(eventClick)
+    //Sanitize this form input results
+    const userFirstName = document.getElementById('firstName').value
+    const userLastName = document.getElementById('lastName').value
+    const userAddress = document.getElementById('address').value
+    const userCity = document.getElementById('city').value
+    const userEmail = document.getElementById('email').value
+    const userDetails = {}
+    Object.assign(userDetails, {"firstName" : userFirstName, "lastName" : userLastName, "address" : userAddress, "city" : userCity, "email" : userEmail})
+    sessionStorage.setItem("userDetails", JSON.stringify(userDetails))
+    request()
+}
+
+
+function request() {
+    const userInfo = JSON.parse(sessionStorage.userDetails)
+    const orderIds = JSON.parse(sessionStorage.cartIds)
+    fetch("http://localhost:3000/api/products/order", {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({"contact": userInfo, "products": orderIds})
+    })
+    .then(function(res) {
+        if (!res.ok) {
+            console.log(res)
+            return res.text().then(function(text) {throw new Error(text)})
+        } else {
+            console.log(res)
+            return res.json()
+        }
+    })
+    .catch(function(err) {
+        console.log(err)
+    })
 }
