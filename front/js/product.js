@@ -93,9 +93,10 @@ addToCart.addEventListener('click', function(eventClick) {
     }
   }
   //User input verification
-  if (productQuantity.value < 1 || productColor.value === "") {
-    //Préparer des alertes affichées directement dans le DOM
-    window.alert("Une erreur s'est produite. Veuillez sélectionner une couleur et indiquer une quantité entre 1 et 100, s'il vous plait.");
+  if (productQuantity < 1 || productColor === "") {
+    const productInputError = document.getElementById('userInputFeedback')
+    productInputError.setAttribute("style", "color: black")
+    productInputError.innerText = "Veuillez sélectionner une couleur et indiquer une quantité entre 1 et 100, s\'il vous plait."
     return
   }
   //Check cart content
@@ -105,6 +106,7 @@ addToCart.addEventListener('click', function(eventClick) {
     const newCartProduct = new cartProductTemplate(productId, productTitle, productUnitPrice, productImgUrl, {[productColor] : productQuantity})
     sessionStorage.setItem(productId, JSON.stringify(newCartProduct))
     saveIdsToSessionStorage(productId)
+    userInputFeedback(productQuantity, productTitle, productColor)
     return
   }
   if (cartProduct.details[productColor]) {
@@ -114,8 +116,17 @@ addToCart.addEventListener('click', function(eventClick) {
     //If color doesn't exist, create color with new quantity
     cartProduct.details[productColor] = productQuantity
   }
+  userInputFeedback(productQuantity, productTitle, productColor)
   sessionStorage.setItem(productId, JSON.stringify(cartProduct))
 })
+
+//User cart input feedback
+function userInputFeedback(productQuantity, productTitle, productColor) {
+  const userInputFeedback = document.getElementById('userInputFeedback')
+  userInputFeedback.setAttribute("style", "color: black")
+  userInputFeedback.innerText = "Vous avez ajouté " + productQuantity + " " + productTitle + " de couleur " + productColor + " à votre panier."
+}
+
 //Lists ids into array and save it to sessionStorage
 function saveIdsToSessionStorage(id) {
   let cartIds = []
