@@ -1,4 +1,10 @@
-//Retrieve cart values from ids list
+//This constant is used for product quantity modification and product deletion
+const modifiedProductDetails = {
+    id: null,
+    color: null
+}
+
+//Retrieves cart values from ids list
 function retrieveProductsInfo() {
     const allProductsId = JSON.parse(sessionStorage.getItem("cartIds"))
     const productsInfo = {}
@@ -8,146 +14,154 @@ function retrieveProductsInfo() {
     return productsInfo
 }
 
-//Set cart recap
+//Sets cart recap
 function setProductsDetails() {
-    const products = retrieveProductsInfo()
-    for (let product in products) {
-        for (let productDetails in products[product].details) {
-            const htmlCartRecapTemplate = `
-                <article class="cart__item" data-id="${JSON.parse(products[product].id)}" data-color="${productDetails}">
-                    <div class="cart__item__img">
-                        <img src="${products[product].imgUrl}" alt="Photographie d'un canapé">
-                    </div>
-                    <div class="cart__item__content">
-                        <div class="cart__item__content__description">
-                            <h2>${products[product].title}</h2>
-                            <p>${productDetails}</p>
-                            <p>${products[product].unitPrice} €</p>
+    if (document.getElementById('cart__items')) {
+        const products = retrieveProductsInfo()
+        for (let product in products) {
+            for (let productDetails in products[product].details) {
+                const htmlCartRecapTemplate = `
+                    <article class="cart__item" data-id="${JSON.parse(products[product].id)}" data-color="${productDetails}">
+                        <div class="cart__item__img">
+                            <img src="${products[product].imgUrl}" alt="Photographie d'un canapé">
                         </div>
-                        <div class="cart__item__content__settings">
-                            <div class="cart__item__content__settings__quantity">
-                                <p>Qté : </p>
-                                <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${products[product].details[productDetails]}">
+                        <div class="cart__item__content">
+                            <div class="cart__item__content__description">
+                                <h2>${products[product].title}</h2>
+                                <p>${productDetails}</p>
+                                <p>${products[product].unitPrice} €</p>
                             </div>
-                            <div class="cart__item__content__settings__delete">
-                                <p class="deleteItem">Supprimer</p>
+                            <div class="cart__item__content__settings">
+                                <div class="cart__item__content__settings__quantity">
+                                    <p>Qté : </p>
+                                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${products[product].details[productDetails]}">
+                                </div>
+                                <div class="cart__item__content__settings__delete">
+                                    <p class="deleteItem">Supprimer</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </article>
-            `
-            if (document.getElementById('cart__items')) {
-                document.getElementById('cart__items').innerHTML += htmlCartRecapTemplate
-            }  
+                    </article>
+                `
+                document.getElementById('cart__items').innerHTML += htmlCartRecapTemplate  
+            }
         }
+        totals()
     }
-    totals()
 }
-setProductsDetails()
 
 //Modifies product color quantity in storage from user input
-const quantityValues = document.querySelectorAll('.itemQuantity')
-const modifiedProductDetails = {
-    id: null,
-    color: null
-}
-for (let i = 0; i < quantityValues.length; i++) {
-    quantityValues[i].addEventListener('change', function(eventChange) {
-        eventChange.preventDefault()
-        eventChange.stopPropagation()
-        const modifiedProduct = quantityValues[i].closest("article")
-        modifiedProductDetails.id = JSON.stringify(modifiedProduct.getAttribute('data-id'))
-        modifiedProductDetails.color = modifiedProduct.getAttribute('data-color')
-        const modifiedCartProduct = JSON.parse(sessionStorage.getItem(modifiedProductDetails.id))
-        if (modifiedCartProduct.details[modifiedProductDetails.color]) {
-            modifiedCartProduct.details[modifiedProductDetails.color] = quantityValues[i].value
-        }
-        sessionStorage.setItem(modifiedProductDetails.id, JSON.stringify(modifiedCartProduct))
-        retrieveProductsInfo()
-        totals()
-    })
+function modifyProductQuantity() {
+    const quantityValues = document.querySelectorAll('.itemQuantity')
+    for (let i = 0; i < quantityValues.length; i++) {
+        quantityValues[i].addEventListener('change', function(eventChange) {
+            eventChange.preventDefault()
+            eventChange.stopPropagation()
+            const modifiedProduct = quantityValues[i].closest("article")
+            modifiedProductDetails.id = JSON.stringify(modifiedProduct.getAttribute('data-id'))
+            modifiedProductDetails.color = modifiedProduct.getAttribute('data-color')
+            const modifiedCartProduct = JSON.parse(sessionStorage.getItem(modifiedProductDetails.id))
+            if (modifiedCartProduct.details[modifiedProductDetails.color]) {
+                modifiedCartProduct.details[modifiedProductDetails.color] = quantityValues[i].value
+            }
+            sessionStorage.setItem(modifiedProductDetails.id, JSON.stringify(modifiedCartProduct))
+            retrieveProductsInfo()
+            totals()
+        })
+    }
 }
 
-//Removes color quantity from sessionStorage and related html element. Removes entire session storage key if product doesn't have any color
-const deleteProduct = document.querySelectorAll('.deleteItem')
-for (let i = 0; i < deleteProduct.length; i++) {
-    deleteProduct[i].addEventListener('click', function(eventClick) {
-        eventClick.preventDefault()
-        eventClick.stopPropagation()
-        const deletedProduct = deleteProduct[i].closest('article')
-        const cartIds = JSON.parse(sessionStorage.getItem("cartIds"))
-        modifiedProductDetails.id = JSON.stringify(deletedProduct.getAttribute('data-id'))
-        modifiedProductDetails.color = deletedProduct.getAttribute('data-color')
-        const deletedCartProduct = JSON.parse(sessionStorage.getItem(modifiedProductDetails.id))
-        if (deletedCartProduct.details[modifiedProductDetails.color]) {
-            delete deletedCartProduct.details[modifiedProductDetails.color]
-            sessionStorage.setItem(modifiedProductDetails.id, JSON.stringify(deletedCartProduct))
-        }
-        if (Object.keys(deletedCartProduct.details).length === 0) {
-            for (let id in cartIds) {
-                if (cartIds[id] === modifiedProductDetails.id) {
-                    cartIds.splice(id, 1)
-                }
+//Removes color quantity from sessionStorage and related html element. Removes entire session storage entry if product doesn't have any color
+function productDeletionEventListener() {
+    const deleteProduct = document.querySelectorAll('.deleteItem')
+    for (let i = 0; i < deleteProduct.length; i++) {
+        deleteProduct[i].addEventListener('click', function(eventClick) {
+            eventClick.preventDefault()
+            eventClick.stopPropagation()
+            const deletedProduct = deleteProduct[i].closest('article')
+            const cartIds = JSON.parse(sessionStorage.getItem("cartIds"))
+            modifiedProductDetails.id = JSON.stringify(deletedProduct.getAttribute('data-id'))
+            modifiedProductDetails.color = deletedProduct.getAttribute('data-color')
+            const deletedCartProduct = JSON.parse(sessionStorage.getItem(modifiedProductDetails.id))
+            if (deletedCartProduct.details[modifiedProductDetails.color]) {
+                delete deletedCartProduct.details[modifiedProductDetails.color]
+                sessionStorage.setItem(modifiedProductDetails.id, JSON.stringify(deletedCartProduct))
             }
-            sessionStorage.setItem("cartIds", JSON.stringify(cartIds))
-            sessionStorage.removeItem(modifiedProductDetails.id)
-        }
-        retrieveProductsInfo()
-        totals()
-        if (cartIds.length === 0) {
-            sessionStorage.removeItem("cartIds")
-        }
-        deleteProduct[i].closest('article').remove()
-    })
+            if (Object.keys(deletedCartProduct.details).length === 0) {
+                for (let id in cartIds) {
+                    if (cartIds[id] === modifiedProductDetails.id) {
+                        cartIds.splice(id, 1)
+                    }
+                }
+                sessionStorage.setItem("cartIds", JSON.stringify(cartIds))
+                sessionStorage.removeItem(modifiedProductDetails.id)
+            }
+            retrieveProductsInfo()
+            totals()
+            if (cartIds.length === 0) {
+                sessionStorage.removeItem("cartIds")
+            }
+            deleteProduct[i].closest('article').remove()
+        })
+    }
 }
 
 //Calculates products units total and total price
 function totals() {
-    const products = retrieveProductsInfo()
-    const productUnits = []
-    const productSubPrices = []
-    let totalUnits = 0
-    let totalPrice = 0
-    for (let product in products) {
-        for (let productDetails in products[product].details) {
-            productUnits.push(Number(products[product].details[productDetails]))
-            productSubPrices.push(Number(products[product].details[productDetails]) * Number(products[product].unitPrice))
+    const totalProductsQuantity = document.getElementById("totalQuantity")
+    const totalProductsPrice = document.getElementById("totalPrice")
+    if (totalProductsQuantity && totalProductsPrice) {
+        const products = retrieveProductsInfo()
+        const productUnits = []
+        const productSubPrices = []
+        let totalUnits = 0
+        let totalPrice = 0
+        for (let product in products) {
+            for (let productDetails in products[product].details) {
+                productUnits.push(Number(products[product].details[productDetails]))
+                productSubPrices.push(Number(products[product].details[productDetails]) * Number(products[product].unitPrice))
+            }
         }
-    }
-    for (let unit in productUnits) {
-        totalUnits += productUnits[unit]
-    }
-    for (let subPrice in productSubPrices) {
-        totalPrice += productSubPrices[subPrice]
-    }
-    if (document.getElementById("totalQuantity") && document.getElementById("totalPrice")) {
-        document.getElementById("totalQuantity").innerText = totalUnits
-        document.getElementById("totalPrice").innerText = totalPrice
+        for (let unit in productUnits) {
+            totalUnits += productUnits[unit]
+        }
+        for (let subPrice in productSubPrices) {
+            totalPrice += productSubPrices[subPrice]
+        }
+        totalProductsQuantity.innerText = totalUnits
+        totalProductsPrice.innerText = totalPrice
     }
 }
 
-//Retrieve form inputs
+//Retrieves form inputs
 function retrieveFormInputs() {
     if (document.querySelector('form')) {
         document.querySelector('form').addEventListener('submit', function(eventClick) {
             eventClick.preventDefault()
-            //Sanitize this form input results
+            const formRegEx = /[<>"'`]*/gm
             const userFirstName = document.getElementById('firstName').value
             const userLastName = document.getElementById('lastName').value
             const userAddress = document.getElementById('address').value
             const userCity = document.getElementById('city').value
             const userEmail = document.getElementById('email').value
+            if (formRegEx.test(userFirstName) ||
+            formRegEx.test(userLastName) || 
+            formRegEx.test(userAddress) ||
+            formRegEx.test(userCity) ||
+            formRegEx.test(userEmail)) {
+                console.error("One of the form fields contains a forbidden value.")
+                return
+            }
             const userDetails = {}
             Object.assign(userDetails, {"firstName" : userFirstName, "lastName" : userLastName, "address" : userAddress, "city" : userCity, "email" : userEmail})
             sessionStorage.setItem("userDetails", JSON.stringify(userDetails))
-            request()
+            requestOrderId()
         })
     }
 }
-retrieveFormInputs()
 
 //Redirects to confirmation page if promise contains order id
-function request() {
+function requestOrderId() {
     const userInfo = JSON.parse(sessionStorage.getItem("userDetails"))
     const orderIds = JSON.parse(sessionStorage.getItem("cartIds"))
     const orderArray = []
@@ -177,10 +191,30 @@ function request() {
 function setOrderId() {
     if (document.getElementById('orderId')) {
         const orderUrl = new URL(window.location.href);
-        const search_params = new URLSearchParams(orderUrl.search);
-        if(search_params.has('orderId')){
-            document.getElementById('orderId').innerText = search_params.get('orderId')
+        const searchParams = new URLSearchParams(orderUrl.search);
+        if(searchParams.has('orderId')){
+            document.getElementById('orderId').innerText = searchParams.get('orderId')
         }
+        sessionStorageCleanUp()
     }
 }
-setOrderId()
+
+//Removes sessionStorage entries created by user order once order is completed
+function sessionStorageCleanUp() {
+    const idsToDelete = JSON.parse(sessionStorage.getItem("cartIds"))
+    for (let id in idsToDelete) {
+        sessionStorage.removeItem(idsToDelete[id])
+    }
+    sessionStorage.removeItem("cartIds")
+    sessionStorage.removeItem("userDetails")
+}
+
+//This function initializes all of the functions above
+function initialize() {
+    setProductsDetails()
+    modifyProductQuantity()
+    productDeletionEventListener()
+    retrieveFormInputs()
+    setOrderId()
+}
+initialize()
