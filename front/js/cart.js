@@ -138,7 +138,7 @@ function retrieveFormInputs() {
     if (document.querySelector('form')) {
         document.querySelector('form').addEventListener('submit', function(eventClick) {
             eventClick.preventDefault()
-            const formRegEx = /[<>"'`]*/gm
+            const formRegEx = /[<>"'`]/gm
             const userFirstName = document.getElementById('firstName').value
             const userLastName = document.getElementById('lastName').value
             const userAddress = document.getElementById('address').value
